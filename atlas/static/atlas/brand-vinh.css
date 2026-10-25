@@ -1,0 +1,11 @@
+/* GEOINT Vinh identity layer - additive, non-destructive */
+:root{--vinh-ink:#071320;--vinh-surface:#10263b;--vinh-accent:#65d3f6;--vinh-border:rgba(120,195,232,.25)}
+body{font-family:Inter,'Segoe UI',system-ui,sans-serif;letter-spacing:.005em}
+.osint-entry,.metric,.panel,.map-panel{box-shadow:0 12px 32px rgba(0,0,0,.12)}
+.osint-entry{border-color:var(--vinh-border)!important;background:linear-gradient(135deg,#102a42,#0b1b2c)!important}
+.osint-primary-link,.osint-top-link{font-weight:700;letter-spacing:.02em}
+.osint-primary-link:focus-visible,.osint-top-link:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid #75d9ff;outline-offset:3px}
+.vinh-brandline{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#83cbe9;font-weight:700;margin:0 0 6px}
+.vinh-signature{color:#85d8f8;font-size:11px;font-weight:600;letter-spacing:.03em}
+.vinh-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid rgba(109,198,237,.3);border-radius:999px;color:#a5d9f3;font-size:11px;background:rgba(17,62,91,.45)}
+@media(max-width:850px){.vinh-brandline{letter-spacing:.06em}.vinh-signature{font-size:10px}}

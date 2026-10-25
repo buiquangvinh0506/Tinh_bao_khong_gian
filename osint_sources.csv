@@ -1,0 +1,27 @@
+name,kind,url,enabled,category,notes
+BBC World,rss,https://feeds.bbci.co.uk/news/world/rss.xml,1,World News,Public RSS verify availability
+BBC Asia,rss,https://feeds.bbci.co.uk/news/world/asia/rss.xml,1,Asia,Public RSS verify availability
+BBC Technology,rss,https://feeds.bbci.co.uk/news/technology/rss.xml,1,Technology,Public RSS verify availability
+BBC Science and Environment,rss,https://feeds.bbci.co.uk/news/science_and_environment/rss.xml,1,Science,Public RSS verify availability
+The Guardian World,rss,https://www.theguardian.com/world/rss,1,World News,Public RSS verify availability
+The Guardian Technology,rss,https://www.theguardian.com/uk/technology/rss,1,Technology,Public RSS verify availability
+Al Jazeera,rss,https://www.aljazeera.com/xml/rss/all.xml,1,World News,Public RSS verify availability
+DW English,rss,https://rss.dw.com/rdf/rss-en-top,1,World News,Public RSS verify availability
+NASA News,rss,https://www.nasa.gov/news-release/feed/,1,Space,Public RSS verify availability
+Janes,html,https://www.janes.com/,0,Defense Analysis,Licensed content - metadata only - manual review
+RUSI,html,https://www.rusi.org/,0,Defense Research,Manual review and permitted access only
+IISS,html,https://www.iiss.org/,0,Strategic Studies,Manual review and permitted access only
+SIPRI,html,https://www.sipri.org/,0,Arms Control Research,Manual review and permitted access only
+CSIS,html,https://www.csis.org/,0,Policy Research,Manual review and permitted access only
+RAND,html,https://www.rand.org/,0,Policy Research,Manual review and permitted access only
+NATO,html,https://www.nato.int/,0,Defense Policy,Official releases manual review
+Defense News,html,https://www.defensenews.com/,0,Defense Industry,Manual review and licensed use
+Breaking Defense,html,https://breakingdefense.com/,0,Defense Industry,Manual review and permitted access
+Naval News,html,https://www.navalnews.com/,0,Naval Technology,Manual review and permitted access
+International Crisis Group,html,https://www.crisisgroup.org/,0,Conflict Research,Historical and policy-level analysis
+ReliefWeb,html,https://reliefweb.int/,0,Humanitarian,Prefer official API for bulk access
+ESA,html,https://www.esa.int/,0,Space,Prefer official RSS list
+USGS,html,https://www.usgs.gov/,0,Earth Science,Prefer official API
+World Bank,html,https://www.worldbank.org/,0,Economics,Prefer official API
+VietnamPlus,html,https://www.vietnamplus.vn/,0,Vietnam News,Review available feeds and rights
+VnExpress,html,https://vnexpress.net/,0,Vietnam News,Review available feeds and rights

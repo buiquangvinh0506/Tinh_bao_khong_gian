@@ -1,0 +1,21 @@
+{
+  "type": "FeatureCollection",
+  "name": "GeoINT demo - minh hoa, khong dung de do dac",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"name": "Văn Miếu - Quốc Tử Giám", "description": "Địa điểm di sản công khai tại Hà Nội (tọa độ gần đúng, chỉ dùng thử giao diện).", "category": "heritage"},
+      "geometry": {"type": "Point", "coordinates": [105.836, 21.029]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Cầu Tràng Tiền", "description": "Cầu công cộng tại Huế (tọa độ minh họa).", "category": "transport"},
+      "geometry": {"type": "Point", "coordinates": [107.592, 16.469]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Vườn quốc gia Cúc Phương", "description": "Khu bảo tồn thiên nhiên (tọa độ minh họa).", "category": "environment"},
+      "geometry": {"type": "Point", "coordinates": [105.662, 20.309]}
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+{% load static %}
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GEOINT VINH | 3D Research Atlas v0.6</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='5' y='50' font-size='48'%3E🌐%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.133.0/Build/Cesium/Widgets/widgets.css">
+  <link rel="stylesheet" href="{% static 'atlas/style.css' %}?v=10">
+  <link rel="stylesheet" href="{% static 'atlas/osint-integration.css' %}?v=1">
+  <script>window.CESIUM_BASE_URL='https://cdn.jsdelivr.net/npm/cesium@1.133.0/Build/Cesium/';</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/cesium@1.133.0/Build/Cesium/Cesium.js"></script>
+  <script defer src="{% static 'atlas/config.local.js' %}"></script>
+  <script defer src="{% static 'atlas/ext/core.js' %}?v=06"></script>
+  <script defer src="{% static 'atlas/ext/geolab.js' %}?v=06"></script>
+  <script defer src="{% static 'atlas/ext/horizon.js' %}?v=08"></script>
+  <script defer src="{% static 'atlas/ext/models.js' %}?v=10"></script>
+  <script defer src="{% static 'atlas/ext/geovision.js' %}?v=10"></script>
+  <script defer src="{% static 'atlas/ext/layers.js' %}?v=06"></script>
+  <script defer src="{% static 'atlas/app.js' %}?v=06"></script>
+</head>
+<body>
+  <main id="mapRegion" aria-label="Bản đồ địa cầu 3D">
+    <div id="globe"></div>
+    <div class="map-topbar">
+      <div class="map-brand"><span class="live-dot"></span><strong>GEOINT / 3D ATLAS</strong><span class="tag">LOCAL</span></div>
+      <div class="map-toolbar" aria-label="Điều khiển bản đồ">
+        <a class="tool-button osint-top-link" href="/api/intelligence/dashboard/" aria-label="Mở trung tâm OSINT">🛰 OSINT</a>
+        <button type="button" class="tool-button" id="viewWorld">🌍 Toàn cầu</button>
+        <button type="button" class="tool-button" id="viewVietnam">🇻🇳 Việt Nam</button>
+        <button type="button" class="tool-button" id="viewSapa">🏔️ Sa Pa</button>
+        <button type="button" class="tool-button" id="mode3d">3D</button>
+        <button type="button" class="tool-button" id="mode2d">2D</button>
+        <button type="button" class="tool-button google3d-button" id="toggleGoogle3D">▣ Bật Google 3D</button>
+      </div>
+    </div>
+    <div class="map-rightbar">
+      <section class="map-panel" aria-label="Điều khiển cảnh 3D">
+        <h3>ĐIỀU KHIỂN CẢNH</h3>
+        <p class="micro" id="google3DStatus" aria-live="polite">Google 3D đang tắt</p>
+        <label class="switchline"><span>Địa hình 3D</span><input id="terrainSwitch" type="checkbox" checked></label>
+        <label class="switchline"><span>Hiển thị địa điểm</span><input id="placesSwitch" type="checkbox" checked></label>
+        <label class="switchline"><span>Ánh sáng mặt trời</span><input id="lightingSwitch" type="checkbox"></label>
+        <label class="range-label" for="terrainExaggeration">Phóng đại độ cao <output id="terrainValue">1.0×</output></label>
+        <input type="range" id="terrainExaggeration" min="1" max="3" step="0.25" value="1">
+        <label class="range-label" for="opacityRange">Độ mờ ảnh nền <output id="opacityValue">100%</output></label>
+        <input type="range" id="opacityRange" min="0" max="100" step="5" value="100">
+      </section>
+      <section class="map-panel" id="gvPanel" aria-label="GeoVision điều khiển nhân vật">
+        <h3>GEOVISION · NHÂN VẬT 3D</h3>
+        <p class="micro">① Avatar · ② Góc nhìn mắt · ③ Đồng bộ Horizon</p>
+        <label class="file-picker">↑ Mở GLB trên máy (≤ 200 MB)<input type="file" id="gvFile" accept=".glb,model/gltf-binary"></label>
+        <div class="grid2"><div><select id="gvSaved"><option value="">— Chọn mô hình đã lưu —</option></select></div><div><button type="button" id="gvRefresh" class="outline-button">↻ Danh sách</button></div></div>
+        <div class="grid2"><div><label for="gvLat">Vĩ độ</label><input id="gvLat" type="number" step="any" value="21.0285"></div><div><label for="gvLon">Kinh độ</label><input id="gvLon" type="number" step="any" value="105.8542"></div></div>
+        <button type="button" class="outline-button block-button" id="gvSetPosition">◎ Đặt vị trí / bám địa hình</button>
+        <div class="grid2"><div><label for="gvEye">Độ cao mắt (m)</label><input id="gvEye" type="number" step="0.1" min="0.5" max="3" value="1.6"></div><div><label for="gvScale">Tỉ lệ mô hình</label><input id="gvScale" type="number" step="0.01" min="0.001" max="100" value="1"></div></div>
+        <div class="grid2"><div><label for="gvSpeed">Tốc độ (m/s)</label><input id="gvSpeed" type="number" step="0.1" min="0.1" max="10" value="1.5"></div><div><label for="gvDistance">Camera cách (m)</label><input id="gvDistance" type="number" step="0.5" min="2" max="30" value="6"></div></div>
+        <label for="gvPitch">Góc cúi camera (°)</label><input id="gvPitch" type="range" min="-50" max="5" value="-14">
+        <div class="form-actions"><button type="button" id="gvStart" class="primary-button">▶ Điều khiển</button><button type="button" id="gvStop" class="outline-button">■ Dừng</button></div>
+        <button type="button" id="gvMode" class="outline-button block-button">🎥 Camera sau lưng</button>
+        <button type="button" id="gvAnalysis" class="outline-button block-button">◇ Hiện hướng quan sát</button>
+        <button type="button" id="gvSyncHorizon" class="outline-button block-button">◎ Đưa điểm mắt sang Horizon Radar</button>
+        <p class="micro" id="gvReadout">Chưa có vị trí.</p>
+        <p class="micro" id="gvStatus" aria-live="polite">Chọn GLB để bắt đầu. W/S đi, A/D xoay, Shift nhanh, V đổi góc nhìn, Esc thoát.</p>
+      </section>
+      <section class="map-panel" aria-label="Đo đạc nhanh">
+        <h3>ĐO ĐẠC TRÊN ĐỊA CẦU</h3>
+        <div class="measure-controls">
+          <button type="button" class="outline-button" id="measureDistance">↔ Khoảng cách</button>
+          <button type="button" class="outline-button" id="measureArea">⬠ Diện tích</button>
+        </div>
+        <p class="micro" id="measureHint">Nhấp trên bản đồ để đo; nhấp đôi để kết thúc.</p>
+        <strong id="measureValue" class="measure-value">Chưa đo</strong>
+        <button type="button" class="quiet-button" id="clearMeasure">Xóa phép đo</button>
+      </section>
+    </div>
+    <div class="map-status"><span id="hoverCoords">Kinh độ — · Vĩ độ —</span><span class="status-separator">|</span><span id="cameraHeight">Độ cao camera —</span><span class="status-separator">|</span><span id="mapStatus">Khởi động...</span></div>
+  </main>
+
+  <aside id="sidebar">
+    <header class="sidebar-head">
+      <div class="eyebrow">GEOSPATIAL RESEARCH WORKSPACE</div>
+      <div class="title-row"><h1>GEOINT <span>VINH</span></h1><span class="version">v0.6</span></div>
+      <p>3D Atlas · Quản trị bằng chứng không gian</p>
+      <div class="kpi-row"><div><strong id="statPlaces">0</strong><small>Địa điểm</small></div><div><strong id="statCategories">0</strong><small>Nhóm dữ liệu</small></div><div><strong id="statVisible">0</strong><small>Đang hiển thị</small></div></div>
+    </header>
+
+    <section class="osint-entry" aria-label="Trung tâm OSINT">
+      <div class="osint-entry-heading"><span class="osint-entry-icon">🛰</span><div><strong>OSINT INTELLIGENCE</strong><small>Trung tâm thông tin nguồn mở</small></div></div>
+      <p>Thu thập, xem xét nguồn, quản lý hồ sơ nghiên cứu và nhật ký hoạt động.</p>
+      <div class="osint-entry-actions">
+        <a href="/api/intelligence/dashboard/" class="osint-primary-link">Mở trung tâm OSINT ↗</a>
+        <a href="/admin/" class="osint-secondary-link">Quản trị</a>
+      </div>
+      <p class="osint-entry-note">Yêu cầu cài ứng dụng Django <code>intelligence</code> và đăng ký URL.</p>
+    </section>
+
+    <nav class="tabs" id="workspaceTabs" aria-label="Chế độ làm việc" tabindex="0" title="Giữ chuột trái và kéo ngang để xem các tab">
+      <button type="button" id="tabPlaces" class="tab active" aria-selected="true">Địa điểm</button>
+      <button type="button" id="tabJournal" class="tab" aria-selected="false">Nhật ký</button>
+      <button type="button" id="tabData" class="tab" aria-selected="false">Dữ liệu</button>
+      <button type="button" id="tabGeoLab" class="tab" aria-selected="false">GeoLab</button>
+      <button type="button" id="tabHorizon" class="tab" aria-selected="false">Góc ngưỡng</button>
+      <button type="button" id="tabModels" class="tab" aria-selected="false">Mô hình 3D</button>
+      <button type="button" id="tabLayers" class="tab" aria-selected="false">Lớp dữ liệu</button>
+    </nav>
+
+    <div class="tab-content active" id="panelPlaces">
+      <section class="side-section">
+        <div class="section-header"><h2 id="formTitle">+ Địa điểm mới</h2><button type="button" id="cancelEdit" class="quiet-button hidden">Hủy sửa</button></div>
+        <p class="hint">Chọn vị trí trên địa cầu hoặc nhập tọa độ. Chỉ lưu địa điểm công khai, không nhạy cảm.</p>
+        <form id="placeForm">
+          {% csrf_token %}
+          <label for="name">Tên địa điểm</label>
+          <input id="name" maxlength="160" required placeholder="Ví dụ: Bảo tàng Lịch sử Quốc gia">
+          <div class="grid2">
+            <div><label for="category">Loại địa điểm</label><select id="category"><option value="research">Điểm nghiên cứu</option><option value="civic">Công trình công cộng</option><option value="heritage">Di sản và lịch sử</option><option value="transport">Giao thông</option><option value="environment">Môi trường</option><option value="other">Khác</option></select></div>
+            <div><label for="sourceUrl">Nguồn tham khảo</label><input id="sourceUrl" type="url" maxlength="500" placeholder="https://..."></div>
+          </div>
+          <label for="description">Mô tả / bằng chứng</label>
+          <textarea id="description" rows="2" maxlength="5000" placeholder="Ghi nhận thông tin có thể kiểm chứng"></textarea>
+          <div class="grid2">
+            <div><label for="latitude">Vĩ độ</label><input id="latitude" type="number" step="any" min="-90" max="90" required placeholder="21.0285"></div>
+            <div><label for="longitude">Kinh độ</label><input id="longitude" type="number" step="any" min="-180" max="180" required placeholder="105.8542"></div>
+          </div>
+          <div class="form-actions"><button type="submit" id="savePlace" class="primary-button">＋ Lưu vào PostgreSQL</button><button id="clearForm" type="button" class="outline-button">Làm sạch</button></div>
+        </form>
+        <p id="message" role="status" aria-live="polite">Đang chuẩn bị...</p>
+      </section>
+      <section class="side-section grow">
+        <div class="section-header"><h2>Kho địa điểm <span class="count" id="count">0</span></h2><button type="button" class="quiet-button" id="refreshPlaces">↻ Làm mới</button></div>
+        <input id="searchPlaces" type="search" placeholder="⌕ Tìm tên, mô tả, tọa độ..." aria-label="Tìm kiếm địa điểm">
+        <div class="filter-row"><select id="filterCategory" aria-label="Lọc loại địa điểm"><option value="all">Tất cả loại</option><option value="research">Điểm nghiên cứu</option><option value="civic">Công trình công cộng</option><option value="heritage">Di sản và lịch sử</option><option value="transport">Giao thông</option><option value="environment">Môi trường</option><option value="other">Khác</option></select><label class="compact-check"><input id="filterViewport" type="checkbox"> Trong vùng nhìn</label></div>
+        <div id="placesList" class="places-list"></div>
+      </section>
+    </div>
+
+    <div class="tab-content" id="panelJournal">
+      <section class="side-section"><h2>Nhật ký thay đổi</h2><p class="hint">Ghi lại thao tác tạo, sửa, xóa, nhập dữ liệu. Chưa phải hệ thống tổng hợp AI tự động.</p><button id="refreshJournal" type="button" class="outline-button">↻ Cập nhật nhật ký</button></section>
+      <div id="journalList" class="journal-list"></div>
+    </div>
+
+    <div class="tab-content" id="panelData">
+      <section class="side-section"><h2>Trao đổi dữ liệu GeoJSON</h2><p class="hint">Xuất kho địa điểm thành <code>FeatureCollection</code>. Nhập tối đa 300 điểm/lần; đường và vùng sẽ được bỏ qua.</p><button type="button" id="exportGeojson" class="primary-button block-button">↓ Xuất GeoJSON từ PostgreSQL</button><label class="file-picker">↑ Chọn tệp GeoJSON để nhập<input id="importFile" type="file" accept=".geojson,.json,application/geo+json,application/json"></label><p id="importReport" class="micro"></p></section>
+      <section class="side-section"><h2>Tọa độ và chuẩn dữ liệu</h2><p class="hint">GeoJSON dùng <strong>WGS 84 (EPSG:4326)</strong>, thứ tự tọa độ là <code>[kinh độ, vĩ độ]</code>. Hình học 3D do CesiumJS hiển thị không phải bằng chứng về độ chính xác đo đạc.</p></section>
+      <section class="side-section"><h2>Chính sách dữ liệu</h2><p class="hint">Chỉ sử dụng nguồn công khai hợp pháp và có quyền sử dụng. Không tự động theo dõi cơ sở nhạy cảm hoặc hoạt động quân sự thời gian thực.</p></section>
+    </div>
+
+    <!-- GEOINT 0.6: Four independent research labs -->
+    <div class="tab-content" id="panelGeoLab">
+      <section class="side-section">
+        <h2>GeoLab · Phòng thí nghiệm 3D</h2>
+        <p class="hint">Quan sát tọa độ, ma trận ECEF, camera và số khung hình. Công cụ này không sửa cơ sở dữ liệu.</p>
+        <div class="form-actions"><button type="button" id="labInspect" class="outline-button">◎ Chọn điểm 3D</button><button type="button" id="labFps" class="outline-button">FPS: Tắt</button></div>
+        <div id="labReadout" class="lab-readout">Nhấn 'Chọn điểm 3D' rồi nhấp trên bản đồ.</div>
+      </section>
+      <section class="side-section">
+        <h2>Điều khiển camera</h2>
+        <label for="labCamHeight">Độ cao ellipsoid (m)</label><input id="labCamHeight" type="number" min="50" max="20000000" step="10" value="850">
+        <div class="grid2"><div><label for="labCamHeading">Phương vị (°)</label><input id="labCamHeading" type="number" min="0" max="360" value="35"></div><div><label for="labCamPitch">Góc nghiêng (°)</label><input id="labCamPitch" type="number" min="-90" max="-5" value="-35"></div></div>
+        <div class="form-actions"><button type="button" id="labApplyCamera" class="primary-button">Áp dụng</button><button type="button" id="labSaveCamera" class="outline-button">Lưu góc nhìn</button></div>
+        <div class="form-actions"><button type="button" id="labRestoreCamera" class="outline-button">Khôi phục góc nhìn</button><button type="button" id="labCopyCamera" class="outline-button">Sao chép tọa độ</button></div>
+        <div id="labCameraInfo" class="lab-readout">—</div>
+      </section>
+    </div>
+
+    <div class="tab-content" id="panelHorizon">
+      <section class="side-section">
+        <h2>Horizon Angle Lab · Góc ngưỡng</h2>
+        <p class="hint">Bước 1: quét vòng 360° bằng các tia DEM rời rạc. Bước 2: chọn phương vị để phân tích một tuyến chi tiết. Đây không phải bản đồ vùng nhìn liên tục.</p>
+        <button type="button" id="hPickObserver" class="outline-button block-button">◎ Chọn vị trí quan sát trên địa hình</button>
+        <div class="grid2"><div><label for="hLat">Vĩ độ</label><input id="hLat" type="number" step="any" value="22.3364"></div><div><label for="hLon">Kinh độ</label><input id="hLon" type="number" step="any" value="103.8438"></div></div>
+        <div class="grid2"><div><label for="hDirections">Số hướng quét vòng</label><input id="hDirections" type="number" min="12" max="72" step="12" value="24"></div><div><label for="hDistance">Cự ly tối đa (km)</label><input id="hDistance" type="number" min="0.2" max="20" step="0.2" value="6"></div></div>
+        <div class="grid2"><div><label for="hEye">Chiều cao mắt (m)</label><input id="hEye" type="number" min="0.5" max="50" value="1.7" step="0.1"></div><div><label for="hSamples">Số mẫu</label><input id="hSamples" type="number" min="20" max="120" value="75"></div></div>
+        <div class="form-actions"><button type="button" id="hScan" class="primary-button">① Quét liên tục 360°</button><button type="button" id="hCancel" class="outline-button" disabled>Dừng radar</button></div>
+        <label for="hAzimuth">② Chọn góc phương vị sau khi quét (°)</label><input id="hAzimuth" type="number" min="0" max="359.999" step="any" value="60" disabled>
+        <div class="form-actions"><button type="button" id="hRun" class="primary-button" disabled>▶ Phân tích một hướng</button><button type="button" id="hClear" class="outline-button">Xóa kết quả</button></div>
+        <div class="lab-readout" id="hSummary">Chưa phân tích.</div>
+        <div class="horizon-chart" id="hChart" aria-label="Đồ thị mặt cắt độ cao">Mặt cắt xuất hiện tại đây.</div>
+        <button type="button" id="hExport" class="outline-button block-button">↓ Xuất kết quả CSV</button>
+        <p class="micro">Giới hạn: quét rời rạc 12–72 hướng; độ cong Trái Đất và khúc xạ chưa mô hình riêng; DEM không bao gồm nhà/cây. Đọc như mô phỏng giáo dục, không dùng cho quyết định an toàn hoặc tác chiến.</p>
+      </section>
+    </div>
+
+    <div class="tab-content" id="panelModels">
+      <section class="side-section">
+        <h2>3D Model Factory · Xưởng mô hình</h2>
+        <p class="hint">Tải tệp <code>.glb</code> tự sở hữu (tối đa 500 MiB mỗi tệp), đặt mô hình tại tọa độ và lưu trên máy qua Django.</p>
+        <form id="modelUploadForm">
+          <label class="file-picker">↑ Chọn tệp GLB<input type="file" id="modelFile" accept=".glb,model/gltf-binary" multiple required></label>
+          <div id="modelSelectionSummary" class="model-selection-summary" role="status" aria-live="polite">Chưa chọn mô hình nào · Giới hạn 500 MiB/tệp.</div>
+          <div id="modelSelectionList" class="model-selection-list" aria-label="Danh sách tệp mô hình đã chọn"></div>
+          <label for="modelName">Tên mô hình (nếu chọn nhiều tệp sẽ thêm tên tệp)</label><input id="modelName" maxlength="160" required placeholder="Ví dụ: Công trình mô phỏng">
+          <button type="button" id="modelPick" class="outline-button block-button">◎ Chọn vị trí trên bản đồ</button>
+          <div class="grid2"><div><label for="modelLat">Vĩ độ</label><input id="modelLat" type="number" step="any" value="21.0285" required></div><div><label for="modelLon">Kinh độ</label><input id="modelLon" type="number" step="any" value="105.8542" required></div></div>
+          <div class="grid2"><div><label for="modelHeight">Độ cao ellipsoid (m)</label><input id="modelHeight" type="number" step="any" value="0"></div><div><label for="modelScale">Tỉ lệ</label><input id="modelScale" type="number" min="0.001" max="1000" step="any" value="1"></div></div>
+          <label class="compact-check"><input type="checkbox" id="modelSnapGround" checked> Lấy độ cao nền từ DEM trước khi lưu</label>
+          <label for="modelHeading">Hướng xoay (°)</label><input id="modelHeading" type="number" min="-360" max="360" value="0" step="any">
+          <label for="modelSource">Nguồn mô hình (tùy chọn)</label><input id="modelSource" type="url" maxlength="500" placeholder="https://...">
+          <button type="submit" class="primary-button block-button" id="modelSubmit">⬆ Lưu các GLB vào Django</button>
+        </form>
+        <progress id="modelUploadProgress" class="model-upload-progress" max="100" value="0" hidden></progress>
+        <p class="micro" id="modelStatus" role="status" aria-live="polite">Các mô hình sẽ được nạp từ máy chủ cục bộ.</p>
+      </section>
+      <section class="side-section grow"><div class="section-header"><h2>Mô hình đã lưu <span class="count" id="modelCount">0</span></h2><button type="button" class="quiet-button" id="modelRefresh">↻ Tải lại</button></div><div id="modelList" class="places-list"></div></section>
+    </div>
+
+    <div class="tab-content" id="panelLayers">
+      <section class="side-section"><h2>Layer Manager · Trung tâm lớp dữ liệu</h2><p class="hint">Bật/tắt các tầng bản đồ, các mô hình đã lưu và lớp GeoJSON nghiên cứu do ông cung cấp. Dữ liệu GeoJSON ở đây chỉ tồn tại trong phiên trình duyệt.</p>
+        <div id="layerList" class="layer-list"></div>
+      </section>
+      <section class="side-section"><h2>Nạp lớp GeoJSON độc lập</h2><label class="file-picker">↑ GeoJSON điểm / đường / vùng (≤ 5 MB)<input type="file" id="layerFile" accept=".geojson,.json,application/geo+json,application/json"></label><p id="layerStatus" class="micro">Lớp này không tự ghi vào PostgreSQL.</p>
+        <div class="form-actions"><button type="button" id="layerExample" class="outline-button">Tải lớp mẫu</button><button type="button" id="layerClear" class="outline-button">Xóa lớp tạm</button></div>
+      </section>
+    </div>
+    <footer>Django · PostgreSQL · CesiumJS 1.133 · Cesium ion<br><span class="footer-dim">Local-first · Không Docker · Không VPS</span></footer>
+  </aside>
+  <script src="{% static 'atlas/ext/tab_drag.js' %}?v=10"></script>
+</body>
+</html>

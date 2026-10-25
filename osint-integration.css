@@ -1,0 +1,19 @@
+/* GEOINT VINH - OSINT navigation extension. Load AFTER existing atlas/style.css. */
+.osint-top-link {display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none!important;white-space:nowrap;background:#12354c!important;border:1px solid #3f9ed1!important;color:#bcecff!important;font-weight:700;}
+.osint-top-link:hover,.osint-top-link:focus-visible {background:#1d5475!important;color:white!important;outline:2px solid #5ac7f6;outline-offset:2px;}
+.osint-entry {margin:12px 15px;padding:13px 14px;background:linear-gradient(135deg,#102c42,#0c1c30);border:1px solid #296082;border-radius:12px;color:#e4f4ff;box-shadow:0 6px 20px rgba(0,0,0,.14);}
+.osint-entry-heading {display:flex;align-items:center;gap:10px;}
+.osint-entry-icon {font-size:22px;line-height:1.2;}
+.osint-entry-heading strong {display:block;font-size:12px;letter-spacing:1px;color:#80d3ff;}
+.osint-entry-heading small {display:block;margin-top:3px;font-size:11px;color:#aac7db;}
+.osint-entry p {font-size:12px;line-height:1.5;color:#b8d0e0;margin:10px 0;}
+.osint-entry-actions {display:flex;flex-wrap:wrap;gap:8px;}
+.osint-entry-actions a {display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:8px 11px;border-radius:7px;text-decoration:none;font-size:12px;font-weight:700;}
+.osint-primary-link {background:#1686c7;color:white!important;flex:1;}
+.osint-primary-link:hover,.osint-primary-link:focus-visible {background:#269de3;}
+.osint-secondary-link {border:1px solid #45677c;color:#d9effc!important;}
+.osint-secondary-link:hover,.osint-secondary-link:focus-visible {background:#21455e;}
+.osint-entry .osint-entry-note {font-size:10px;color:#90aabd;margin-bottom:0;}
+.osint-entry-note code {font-size:10px;}
+@media(max-width:950px){.osint-top-link{font-size:12px;padding:8px 10px}.osint-entry{margin:9px 10px;}}
+@media(max-width:600px){.osint-top-link{font-size:11px;}.osint-entry-actions a{flex:1;}}
